@@ -26,13 +26,13 @@ class Expense(BaseModel):
 
 
 
-# def break_date(date): #defined a function for breaking time
+def break_date(date): #defined a function for breaking time
 
-#     date = date #format YYYY-MM-DD
-#     date_obj = datetime.strptime(date, "%m") #This is a function or method that is used to break date in year,Month and day imported from datetime library
-#     # date_obj = datetime.strptime(date, "%Y-%m-%d") #This is a function or method that is used to break date in year,Month and day imported from datetime library
-#     # month = date_obj.month #seperated month and stored in variable month
-#     return date_obj
+    date = date #format YYYY-MM-DD
+    date_obj = datetime.strptime(date, "%m") #This is a function or method that is used to break date in year,Month and day imported from datetime library
+    # date_obj = datetime.strptime(date, "%Y-%m-%d") #This is a function or method that is used to break date in year,Month and day imported from datetime library
+    # month = date_obj.month #seperated month and stored in variable month
+    return date_obj
 
 
 
@@ -42,14 +42,14 @@ def add_expense(item_id: int, expense: Expense):
     if collection.find_one({"item_id": item_id}):
         raise HTTPException(status_code=400, detail="Item ID already exists")
     
-    # month = break_date(expense.date)
+    month = break_date(expense.date)
     
     expense_data = {
         "item_id": item_id,
         "amount": expense.amount,
         "category": expense.category.lower(),
         "date":expense.date,
-        # "month": month,
+        "month": month,
         # "start_date": expense.start_date,
         # "end_date": expense.end_date,
         "description": expense.description
