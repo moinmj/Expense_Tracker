@@ -5,38 +5,62 @@ from datetime import datetime, date
 API_URL = "http://127.0.0.1:8000"
 
 
-st.title("Add New Expense")
-action=st.sidebar.selectbox("select",("Add","Get","View by date","view by category","view by month","top spending category"))   
-if action=="Add":
-    with st.form("expense_form"): #Forms a Form -->We use with st.form(...) to group multiple input widgets together into a single form, so that they are only processed when a specific submit button is clicked.
+st.title("Expense Tracker")
+action = st.sidebar.selectbox("Select Action", ("Add", "Get", "View by date", "view by category", "view by month", "top spending category"))   
+
+if action == "Add":
+    tab1, tab2 = st.tabs(["Add Expense", "Add Category"])
+    
+    with tab1:
+        with st.form("expense_form"):
             item_id = st.text_input("Item ID")
             amount = st.number_input("Amount", min_value=0)
-            category = st.selectbox("Category",["Food","Salary","clothes"])
-            # category = st.text_input("Category")
+            category = st.selectbox("Category", ["Food", "Salary", "clothes"])
             date_val = st.date_input("Date")
             description = st.text_input("Description")
             
-            submit_button = st.form_submit_button("Add Expense") #And here I formed submit button that triggers processing of all form inputs at once.
+            submit_button = st.form_submit_button("Add Expense")
             
-            if submit_button and category and amount and date_val:  # Basic validation until these inputs are inserted it won't submit
+            if submit_button and amount and date_val:
                 expense_data = {
-                    "amount": int(amount),      #Prepares a JSON-like Python dict to send to the backend as HTTP doesn't take python object
-                    "category": str(category).lower(),
+                    "amount": int(amount),
+                    # "category": str(category).lower(),
                     "date": date_val.strftime("%Y-%m-%d"),
                     "description": str(description)
                 }
                 
+                response = requests.post(f"{API_URL}/expense/{item_id}", json=expense_data)
                 
-                response = requests.post( f"{API_URL}/expense/{item_id}",json=expense_data)  #request.post is a function that sends a post request to the backend route, and turns data into json   
+                if response.status_code == 200:
+                    st.success("Expense added successfully!")
+                    st.json(response.json())
+                else:
+                    st.error(f"Error: {response.json()['detail']}")
+    
+    with tab2:
+        with st.form("category_form"):
+            _id = st.number_input("_id", min_value=0)
+            category = st.selectbox("Category ", ["Food", "Salary", "clothes"])
+            submit_cat_button = st.form_submit_button("Add Category")
+            
+            if submit_cat_button:
+                category_data = {
+                    "item_id": int(_id), 
+                    "category": str(category).lower()
+                }
+                
+                # try:
+                response = requests.post(
+                        f"{API_URL}/expense-by-category/{_id}",params={"category": category.lower()},json=category_data
+                    )
                     
-                    
-                if response.status_code == 200: #status_code is an HTML code if 200 it means success, 404 is error 201 is created
-                        st.success("Expense added successfully!")
+                if response.status_code == 200:
+                        st.success("Category added successfully!")
                         st.json(response.json())
                 else:
-                        st.error(f"Error: {response.json()['detail']}") #returns error message that is item not found
-
-
+                        st.error(f"Error: {response.json()['ID already taken,Insert New Id to insert your category']}")
+                # except Exception as e:
+                #     st.error(f"Error: {str(e)}")
 elif action == "Get":
     st.header("View Expense by ID")
     item_id = st.number_input("Enter Item ID", min_value=1, step=1)
@@ -45,11 +69,11 @@ elif action == "Get":
                 response = requests.get(f"{API_URL}/allexpense/{item_id}") #get api hit
                 if response.status_code == 200: #if success
                     expense = response.json() #will send data to expense
-                    st.write("### Expense Details")
-                    st.write(f"**Amount:** ${expense['amount']}")
-                    st.write(f"**Category:** {expense['category']}") #all the data that will be displayed
-                    st.write(f"**Date:** {expense['date']}")
-                    st.write(f"**Description:** {expense['description']}")
+                    st.write("Expense Details")
+                    st.write(f"Amount: {expense['amount']}")
+                    st.write(f"Category:{expense['category']}") #all the data that will be displayed
+                    st.write(f"Date:{expense['date']}")
+                    st.write(f"Description:{expense['description']}")
                 else:
                     st.error(f"Error: {response.json()['detail']}")
             except requests.exceptions.RequestException as e:
@@ -79,7 +103,20 @@ elif action=="View by date":
 
 elif action=="view by category":
     st.header("View Expenses by Category")
-    category = st.text_input("Enter Category")
+    category = st.selectbox("Category",["Food","Salary","clothes"])
+    # category = st.text_input("Enter Category")
+    if st.button("Search by Category"):
+                response = requests.get( f"{API_URL}/get-item-by-category/", params={"category": category.lower()}
+                )  #this method here takes only 1 query parameter category
+                if response.status_code == 200:
+                    expenses = response.json()
+                    st.write(expenses)
+                else:
+                    st.error(f"Error: {response.json()['detail']}")
+elif action=="view by category":
+    st.header("View Expenses by Category")
+    category = st.selectbox("Category",["Food","Salary","clothes"])
+    # category = st.text_input("Enter Category")
     if st.button("Search by Category"):
                 response = requests.get( f"{API_URL}/get-item-by-category/", params={"category": category.lower()}
                 )  #this method here takes only 1 query parameter category
