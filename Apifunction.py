@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-import databasee
+import database
 class Expense(BaseModel):
     amount:int 
     # category:str
