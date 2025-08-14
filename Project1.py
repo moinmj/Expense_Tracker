@@ -1,411 +1,401 @@
-# from fastapi import FastAPI , Path , Query ,HTTPException, status
-# from pydantic import BaseModel, Field
-# from typing import Optional
-# import pymongo
-# from datetime import date, datetime
-# # import Apifunction
-# # from motor.motor_asyncio import AsyncIOMotorClient
-# print("Welcome to pmongo")
-# client=pymongo.MongoClient("mongodb://localhost:27017/") #this here is connection to by database
-# print(client)
-# db=client["Learning"] #making database name,forming a database
-# collection=db["expense"]
-# collection1=db["categories"]
-# collection2=db["userr_data"]
-# collection3=db["role"]
-
-# app=FastAPI()
-
-# class Expense(BaseModel):
-#     amount:int 
-#     category:str | dict
-#     date:str=Field(...,description="Provide in YYYY-MM-DD format",example="YYYY-MM-DD") #These here are fields especially given description to date field to provide format of date
-#     description:str
-#     email:str
-# class Cat(BaseModel):
-#     category:str
-# class User_data(BaseModel):
-#     username:str
-#     first_name:str
-#     middle_name:str
-#     last_name:str
-#     email:str
-#     password:str
-#     Role:str
-# class Role_data(BaseModel):
-#     Role:str
-# class LoginRequest(BaseModel):
-#     username_or_email: str
-#     password: str
-#     # Role:str
-# # inventory = {}
-# #experiments
-
-# # I am trying pull request
-
-# #what is happening
-# def break_date(date): #defined a function for breaking time
-
-#     date = date #format YYYY-MM-DD
-#     date_obj = datetime.strptime(date, "%Y-%m-%d") #This is a function or method that is used to break date in year,Month and day imported from datetime library
-#     # date_obj = datetime.strptime(date, "%Y-%m-%d") #This is a function or method that is used to break date in year,Month and day imported from datetime library
-#     # month = date_obj.month #seperated month and stored in variable month
-#     return date_obj
-
-
-
-
-# @app.post("/expense/{item_id}")
-# def add_expense(item_id: int,email:str, expense: Expense):
-#     if collection.find_one({"item_id": item_id}):
-#         raise HTTPException(status_code=400, detail="Item ID already exists")
-    
-#     month = break_date(expense.date)
-#     expense_data = {
-#         "item_id": item_id,
-#         "amount": expense.amount,
-#         "category": expense.category.lower(),
-#         "date":expense.date,
-#         "month": month,
-#         "description": expense.description,
-#         "email":expense.email
-#     }
-#     collection.insert_one(expense_data)
-#     return {"message": "Expenses added successfully"}
-# #Post Api for user data
-# @app.post("/user_data/")
-# def add_userdata( user: User_data):
-#     if collection2.find_one({"$or": [{"username": user.username},{"email": user.email}]}):
-#         raise HTTPException(status_code=400, detail="Username or email already exists")
-
-    
-    
-#     user_dataa = {
-#         "username": user.username,
-#         "first_name": user.first_name,
-#         "middle_name": user.middle_name,
-#         "last_name":user.last_name,
-#         "email": user.email,
-#         "password": user.password,
-#         # "Role":user.Role
-#     }
-#     collection2.insert_one(user_dataa)
-#     return {"message": "User Data added successfully"}
-# @app.post("/login/")
-# def login_user(login_data: LoginRequest):
-#     # Try to find the user by username OR email
-#     user = collection2.find_one({
-#         "$or": [
-#             {"username": login_data.username_or_email},
-#             {"email": login_data.username_or_email}
-#             # {"Role": login_data.Role},
-
-#         ]
-#     })
-
-#     if not user:
-#         raise HTTPException(status_code=404, detail="User not found")
-#     if user["password"] != login_data.password:
-#         raise HTTPException(status_code=401, detail="Incorrect password")
-#     user["_id"] = str(user["_id"])
-
-#     return {
-#         "message": "Login successful",
-#         "user": user
-#     }
-
-# @app.post("/role/")
-# def add_userdata(Role: str, role: Role_data):
-    
-#     rolee_dataa = {
-#         "Role": Role,
-#     }
-#     collection3.insert_one(rolee_dataa)
-#     return {"message": "Role added successfully"}
-# @app.get("/yourexpensebymail/")
-# def get_expensebyemailpassword(*,email: str,password:str):
-#     expense = collection2.find_one({"email": email,"password":password})
-#     if not expense:
-#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Data not found")
-#     if "_id" in expense:
-#         expense["_id"] = str(expense["_id"])
-#     return expense
-# @app.get("/role/{Role}")
-# def get_expense(Role: str = Path(description="The Role you want to retrieve")):
-#     expense = collection3.find_one({"Role": Role})
-#     if not expense:
-#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Expense not found")
-#     if "_id" in expense:
-#         expense["_id"] = str(expense["_id"])
-#     return expense
-# @app.get("/categories")
-# def fetch_categories_only():
-#     categories = collection1.distinct("category")  # only unique category values
-    
-#     if not categories:
-#         raise HTTPException(
-#             status_code=status.HTTP_404_NOT_FOUND,
-#             detail="No categories found"
-#         )
-
-#     return categories
-
-
-# # @app.get("/get-item-by-category/")
-# # def fetch_items_by_category():
-# #     categories = list(collection1.find())
-# #     if not categories:
-# #         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No expenses found for this category")
-# #     for expense in categories:
-# #         if "_id" in categories:
-# #             expense["_id"] = str(expense["_id"])
-# #             return categories 
-# #     # return fetch_items_by_category()
-# # @app.get("/categories")
-# # def get_all_categories_from_collection1():
-# #     categories = list(collection1.find())
-# #     for category in categories:
-# #         if "_id" in category:
-# #             category["_id"] = str(category["_id"])
-
-# @app.post("/expense-by-category/{_id}")
-# def add_expense_by_category(_id: int = Path(description="Provide id in 0,1,2...and so on"),category: str = Query(description="only give these three items as food,salary,clothes"),cat:Cat =None):
-#     @app.get("/get-item-by-category/")
-#     def get_item_by_category(*,category:str= Query(...,description="You can get any category")):
-#         expenses=list(collection.find({"category":category}))
-#         if not expenses:
-#             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No expenses found for this categpry")
-#         for expense in expenses:
-#             if "_id" in expense:
-#                 expense["_id"] = str(expense["_id"])
-#         return expenses
-#     if cat is None:
-#         raise HTTPException(status_code=400, detail="Request body is required")
-        
-#     category_data = {
-#         "_id": _id,
-#         "category": category.lower()
-#     }
-    
-#     try:
-#         collection1.insert_one(category_data)
-#         return {"message": "Category added successfully"}
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
-
-
-# # @app.get("/bygategory/{_id}")
-# # def get_expense(_id: int = Path(description="The _id of the expense to retrieve,Should be in 0,1,2.....any number")):
-# #     expenseee = collection1.find_one({"_id":_id})
-# #     if not expenseee:
-# #         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Expense not found")
-# #     if "_id" in expenseee:
-# #         expenseee["_id"] = str(expenseee["_id"])
-#     # return expenseee
-
-# # @app.get("/allexpense/{item_id}")
-# # def get_expense(item_id: int = Path(description="The ID of the expense to retrieve")):
-# #     expense = collection.find_one({"item_id": item_id})
-# #     if not expense:
-# #         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Expense not found")
-# #     if "_id" in expense:
-# #         expense["_id"] = str(expense["_id"])
-# #     return expense
-# @app.get("/allexpense/{email}")
-# def get_expense(email: str = Path(description="The ID of the expense to retrieve")):
-#     expense = list(collection.find({"email": email}))
-#     if not expense:
-#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Expense not found")
-#     if "_id" in expense:
-#         expense["_id"] = str(expense["_id"])
-#     return expense
-# @app.get("/allexpensess")
-# def get_all_expenses():
-#     expenses = list(collection.find())
-#     for expense in expenses:
-#         if "_id" in expense:
-#             expense["_id"] = str(expense["_id"])
-#     return expenses
-# @app.get("/expensebydate/", summary="Get expenses by item ID and date range")
-# def get_expense(
-#     *,start_date: date = Query(description="Start date in YYYY-MM-DD format", example="2025-01-01"),  # item_id: int = Path(description="The ID of the expense to retrieve"),
-#     end_date: date = Query(description="End date in YYYY-MM-DD format", example="2025-01-31")
-# ):
-#     query={
-#         "date": {
-#             "$gte": start_date.isoformat(),
-#             "$lte":end_date.isoformat()
-
-#         }
-#     }
-#     expenses=list(collection.find({query}))
-#     if not expenses:
-#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No expenses found for this categpry")
-#     for expense in expenses:
-#         if "_id" in expense:
-#             expense["_id"] = str(expense["_id"])
-#     return expenses
-
-# @app.get("/categories")
-# def get_all_categories_from_collection1():
-#     categories = list(collection1.find())
-#     for category in categories:
-#         if "_id" in category:
-#             category["_id"] = str(category["_id"])
-# #     return categories
-# # @app.get("/categoriess")
-# # def get_all_categories_from_collection():
-# #     categoriess = list(collection.find({},{"_id":0,"category":1}))
-# #     # for category in categoriess:
-# #     #     if "_id" in category:
-# #     #         category["_id"] = str(category["_id"])
-# #     return [{"category": category["category"]} for category in categoriess]
-# #     # return categoriess
-# @app.get("/get-item-by-category/")
-# def get_item_by_category(*,category:str= Query(...,description="You can get any category")):
-#     expenses=list(collection.find({"category":category}))
-#     if not expenses:
-#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No expenses found for this categpry")
-#     for expense in expenses:
-#         if "_id" in expense:
-#             expense["_id"] = str(expense["_id"])
-#     return expenses
-
-# @app.get("/expensebymonth/")
-# def get_expenses_by_month(month: int = Query(..., description="Month as a number (1-12)")):
-#     # Fetch all records
-#       # Use empty filter to get all documents
-#     expenses = list(collection.find({ "month":month}))
-#     if not expenses:
-#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No expenses found for this month")
-#     # Filter based on the month extracted from string-formatted date
-#     # filtered_expenses = []
-#     for expense in expenses:
-#          if "_id" in expense:
-#             expense["_id"] = str(expense["_id"])
-#     return expenses
-# @app.get("/top-categories")
-# def get_top_categories():
-#     expense = [{"$group": {"_id": "$category", "total_amount": {"$sum": "$amount"}}},
-#         {"$sort": {"total_amount": -1}},
-#         {"$limit": 3}
-#     ]
-#     # expense = [
-#     #     {"$group": {"_id": "$category", "total_amount": {"$sum": "$amount"}}},
-#     #     {"$sort": {"total_amount": -1}},
-#     #     {"$limit": 3}
-#     # ]
-#     expenses = list(collection.aggregate(expense))
-#     return expenses
-#     # result = list(collection.aggregate(expense))
-#     # return [{"category": r["_id"], "total_amount": r["total_amount"]} for r in result]
-from fastapi import FastAPI, HTTPException,Query
-import pymongo
-from collections import defaultdict
-from datetime import date,datetime
+from fastapi import FastAPI, HTTPException, Query, Path
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List, Dict, Any
+from datetime import datetime
+from bson import ObjectId
+import pymongo
 
+# -------------------------
+# DB setup (your existing names)
+# -------------------------
 client = pymongo.MongoClient("mongodb://localhost:27017/")
 db = client["Learning"]
-collection1=db["expense"]
-collection3=db["categories"]
-collection2=db["userr_data"]
 
-app = FastAPI()
+collection1 = db["expense"]      # expenses
+collection2 = db["categories"]   # categories
+collection3 = db["userr_data"]   # users
+collection4 = db["role"]         # roles (email -> role)
 
-class Expense(BaseModel):
-    amount:int 
-    category:str | dict
-    date:str=Field(...,description="Provide in YYYY-MM-DD format",example="YYYY-MM-DD") #These here are fields especially given description to date field to provide format of date
-    description:str
-    user_email:str
+ADMIN_EMAIL = "moinmj7@gmail.com"
+
+app = FastAPI(title="Expense Tracker - Role Based (Simple)")
+
+# -------------------------
+# Helper utilities
+# -------------------------
+def objid_to_str(doc: Dict[str, Any]) -> Dict[str, Any]:
+    """Convert _id ObjectId to string for a single document."""
+    if not doc:
+        return doc
+    doc = dict(doc)
+    if "_id" in doc:
+        doc["_id"] = str(doc["_id"])
+    return doc
+
+def list_objid_to_str(docs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Convert _id ObjectId to string for list of documents."""
+    result = []
+    for d in docs:
+        d2 = dict(d)
+        if "_id" in d2:
+            d2["_id"] = str(d2["_id"])
+        result.append(d2)
+    return result
+
+def parse_date_str(d: str) -> datetime:
+    try:
+        return datetime.strptime(d, "%Y-%m-%d")
+    except Exception:
+        raise HTTPException(status_code=422, detail="Date must be in YYYY-MM-DD format")
+
+def is_admin_email(email: str) -> bool:
+    return email and email.lower() == ADMIN_EMAIL.lower()
+
+def ensure_user_exists(email: str):
+    if not collection3.find_one({"email": email}):
+        raise HTTPException(status_code=404, detail="User not found")
+
+def ensure_admin(email: str):
+    """Simple admin guard by email (only ADMIN_EMAIL)."""
+    if not is_admin_email(email):
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+# -------------------------
+# Pydantic models
+# -------------------------
+class RegisterModel(BaseModel):
+    username: str
+    email: str
+    password: str
+    First_name: Optional[str] = ""
+    Middle_name: Optional[str] = ""
+    Last_name: Optional[str] = ""
+
+class LoginModel(BaseModel):
+    email: str
+    password: str
+
+class ExpenseIn(BaseModel):
+    amount: float
+    category: str
+    date: str = Field(..., description="YYYY-MM-DD")
+    description: Optional[str] = ""
+    user_email: str
+
+class UpdateExpenseModel(BaseModel):
+    expense_id: str
+    amount: Optional[float] = None
+    category: Optional[str] = None
+    date: Optional[str] = None
+    description: Optional[str] = None
+
+class CategoryIn(BaseModel):
+    category: str
+
+class UpdateCategoryModel(BaseModel):
+    category_id: str
+    category: str
+
+class UpdateUserModel(BaseModel):
+    username: Optional[str] = None
+    First_name: Optional[str] = None
+    Middle_name: Optional[str] = None
+    Last_name: Optional[str] = None
+    password: Optional[str] = None
+
+# -------------------------
+# AUTH: Register & Login
+# -------------------------
 @app.post("/register")
-def register(username: str, email: str, password: str,First_name:str,Middle_name:str,Last_name:str):
-    if collection2.find_one({"email": email}):
+def register(user: RegisterModel):
+    # Prevent duplicate email
+    if collection3.find_one({"email": user.email}):
         raise HTTPException(status_code=400, detail="Email already registered")
-    collection2.insert_one({"username": username, "email": email, "password": password,"First_name":First_name,"Middle_name":Middle_name,"Last_name":Last_name})
-    return {"message": "User registered successfully"}
+
+    # store plain password (kept intentionally as in your code)
+    user_doc = {
+        "username": user.username,
+        "email": user.email,
+        "password": user.password,
+        "First_name": user.First_name,
+        "Middle_name": user.Middle_name,
+        "Last_name": user.Last_name
+    }
+    collection3.insert_one(user_doc)
+
+    # assign role in collection4
+    role_value = "admin" if is_admin_email(user.email) else "user"
+    collection4.insert_one({"email": user.email, "role": role_value})
+
+    return {"message": "User registered successfully", "role": role_value}
 
 @app.post("/login")
-def login(email: str, password: str):
-    user = collection2.find_one({"email": email})
-    if not user or user["password"] != password:
+def login(data: LoginModel):
+    user = collection3.find_one({"email": data.email})
+    if not user:
         raise HTTPException(status_code=400, detail="Invalid credentials")
-    return {"message": "Login successful", "email": email}
 
-def break_date(date): #defined a function for breaking time
+    # fix: compare provided password with stored password
+    if data.password != user.get("password"):
+        raise HTTPException(status_code=400, detail="Invalid credentials")
 
-    date = date #format YYYY-MM-DD
-    date_obj = datetime.strptime(date, "%Y-%m-%d") #This is a function or method that is used to break date in year,Month and day imported from datetime library
-    date_obj = datetime.strptime(date, "%Y-%m-%d") #This is a function or method that is used to break date in year,Month and day imported from datetime library
-    month = date_obj.month #seperated month and stored in variable month
-    return month
+    # fetch role
+    role_doc = collection4.find_one({"email": data.email})
+    role_value = role_doc["role"] if role_doc else "user"
+    return {"message": "Login successful", "email": data.email, "role": role_value}
 
+# -------------------------
+# Add Expense (user)
+# -------------------------
 @app.post("/add-expense")
-def add_expense(expense:Expense):
-    month=break_date(expense.date)
-    expense = {
-        "amount": expense.amount,
-        "category": expense.category.lower(),
-        "date":expense.date,
+def add_expense(expense: ExpenseIn):
+    # user must exist
+    ensure_user_exists(expense.user_email)
+
+    # category normalization/check
+    cat = (expense.category or "").strip().lower()
+    existing_cat = collection2.find_one({"category": cat}) or collection2.find_one({"name": cat})
+    # allow expense even if category not present (as before)
+
+    # parse date and store month
+    _ = parse_date_str(expense.date)
+    month = _.month
+
+    doc = {
+        "amount": float(expense.amount),
+        "category": cat,
+        "date": expense.date,
         "month": month,
-        "description": expense.description,
-        "user_email":expense.user_email
+        "description": expense.description or "",
+        "user_email": expense.user_email
     }
-    collection1.insert_one(expense)
-    return {"message": "Expense added successfully"}
-@app.get("/categories")
-def fetch_categories_only():
-    categories = collection3.distinct("category")  # only unique category values
-    
-    if not categories:
-        raise HTTPException(status_code=400, detail="No categories found")
-    return categories
+    res = collection1.insert_one(doc)
+    return {"message": "Expense added successfully", "expense_id": str(res.inserted_id)}
+
+# -------------------------
+# Get My Expenses
+# -------------------------
 @app.get("/get-my-expenses")
-def get_my_expenses(email: str):
-    expenses = list(collection1.find({"user_email": email}))
-    for exp in expenses:
-        exp["_id"] = str(exp["_id"])
-    if not expenses:
-        raise HTTPException(status_code=404, detail="No expenses found for this user")
-    return {"email": email, "expenses": expenses}
+def get_my_expenses(email: str = Query(..., description="Your login email")):
+    ensure_user_exists(email)
+    docs = list(collection1.find({"user_email": email}))
+    return {"email": email, "expenses": list_objid_to_str(docs)}
 
+# -------------------------
+# Get My Categories (distinct categories used by this user)
+# -------------------------
 @app.get("/get-my-categories")
-def get_my_categories(email: str):
-    categories = collection1.distinct("category", {"user_email": email})
-    if not categories:
-        raise HTTPException(status_code=404, detail="No categories found for this user")
-    return {"email": email, "categories": categories}
+def get_my_categories(email: str = Query(...)):
+    ensure_user_exists(email)
+    cats = collection1.distinct("category", {"user_email": email})
+    return {"email": email, "categories": cats}
+
+# -------------------------
+# Get Expenses By Month
+# -------------------------
 @app.get("/expensebymonth/")
-def get_expenses_by_month(email:str,month: int = Query(..., description="Month as a number (1-12)")):
-    monthh = list(collection1.find({ "user_email":email,"month":month}))
-    if not monthh:
-        raise HTTPException(status_code=404, detail="No expenses found for this month")
-    for expense in monthh:
-         if "_id" in expense:
-            expense["_id"] = str(expense["_id"])
-    return monthh
-# @app.get("/get-top-category")
-# def get_top_category(email: str):
-#     expenses = list(collection1.find({"user_email": email}))
-#     if not expenses:
-#         raise HTTPException(status_code=404, detail="No expenses found for this user")
+def get_expenses_by_month(email: str = Query(...), month: int = Query(..., ge=1, le=12)):
+    ensure_user_exists(email)
+    docs = list(collection1.find({"user_email": email, "month": month}))
+    return list_objid_to_str(docs)
 
-#     category_totals = defaultdict(float)
-#     for exp in expenses:
-#         category_totals[exp["category"]] += exp["amount"]
-
-#     top_category = max(category_totals, key=category_totals.get)
-#     return {
-#         "email": email,
-#         "top_category": top_category,
-#         "amount": category_totals[top_category]
-#     }
+# -------------------------
+# Top 3 categories for a user
+# -------------------------
 @app.get("/get-top-categories")
-def get_top_categories(email:str):
-    expense = [{"$match":{"user_email":email}},{"$group": {"_id": "$category", "total_amount": {"$sum": "$amount"}}},
+def get_top_categories(email: str = Query(...)):
+    ensure_user_exists(email)
+    pipeline = [
+        {"$match": {"user_email": email}},
+        {"$group": {"_id": "$category", "total_amount": {"$sum": "$amount"}}},
         {"$sort": {"total_amount": -1}},
         {"$limit": 3}
     ]
-    return list(collection1.aggregate(expense))
+    data = list(collection1.aggregate(pipeline))
+    return [{"category": d["_id"], "total_amount": d["total_amount"]} for d in data]
+
+# -------------------------
+# Update My Expense (user can update only their expense)
+# -------------------------
+@app.put("/update-my-expense")
+def update_my_expense(email: str = Query(...), payload: UpdateExpenseModel = None):
+    if payload is None:
+        raise HTTPException(status_code=400, detail="No update payload provided")
+    # ensure expense exists and belongs to user
+    try:
+        oid = ObjectId(payload.expense_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid expense id")
+
+    exp = collection1.find_one({"_id": oid})
+    if not exp:
+        raise HTTPException(status_code=404, detail="Expense not found")
+    if exp.get("user_email") != email:
+        raise HTTPException(status_code=403, detail="Not authorized to update this expense")
+
+    update_fields = {}
+    if payload.amount is not None:
+        update_fields["amount"] = float(payload.amount)
+    if payload.category:
+        update_fields["category"] = payload.category.strip().lower()
+    if payload.date:
+        _ = parse_date_str(payload.date)
+        update_fields["date"] = payload.date
+        update_fields["month"] = _.month
+    if payload.description is not None:
+        update_fields["description"] = payload.description
+
+    if not update_fields:
+        raise HTTPException(status_code=400, detail="No fields to update")
+
+    collection1.update_one({"_id": oid}, {"$set": update_fields})
+    return {"message": "Expense updated successfully"}
+
+# -------------------------
+# Admin: View all users (hide passwords)
+# -------------------------
+@app.get("/view-all-users")
+def view_all_users(email: str = Query(...)):
+    ensure_admin(email)
+    users = list(collection3.find({}, {"password": 0}))
+    return {"users": list_objid_to_str(users)}
+
+# -------------------------
+# Admin: Delete user (by user_id)
+# -------------------------
+@app.delete("/delete-user/{user_id}")
+def delete_user(user_id: str = Path(...), email: str = Query(...)):
+    ensure_admin(email)
+    try:
+        oid = ObjectId(user_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid user id")
+
+    # fetch user doc to get email to cleanup role & expenses
+    user_doc = collection3.find_one({"_id": oid})
+    if not user_doc:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user_email = user_doc.get("email")
+
+    # delete user
+    res = collection3.delete_one({"_id": oid})
+    if res.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # delete role doc for that email
+    collection4.delete_many({"email": user_email})
+    # delete their expenses
+    collection1.delete_many({"user_email": user_email})
+
+    return {"message": "User and related data deleted successfully"}
+
+# -------------------------
+# Admin: Update user (by user_id)
+# -------------------------
+@app.put("/update-user/{user_id}")
+def update_user(user_id: str = Path(...), email: str = Query(...), updates: UpdateUserModel = None):
+    ensure_admin(email)
+    if updates is None:
+        raise HTTPException(status_code=400, detail="No update data provided")
+
+    try:
+        oid = ObjectId(user_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid user id")
+
+    update_fields = {}
+    if updates.username is not None:
+        update_fields["username"] = updates.username
+    if updates.First_name is not None:
+        update_fields["First_name"] = updates.First_name
+    if updates.Middle_name is not None:
+        update_fields["Middle_name"] = updates.Middle_name
+    if updates.Last_name is not None:
+        update_fields["Last_name"] = updates.Last_name
+    if updates.password is not None:
+        update_fields["password"] = updates.password
+
+    if not update_fields:
+        raise HTTPException(status_code=400, detail="No fields to update")
+
+    res = collection3.update_one({"_id": oid}, {"$set": update_fields})
+    if res.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"message": "User updated successfully"}
+
+# -------------------------
+# Admin: Add Category
+# -------------------------
+@app.post("/add-category")
+def add_category(email: str = Query(...), payload: CategoryIn = None):
+    ensure_admin(email)
+    if not payload or not payload.category:
+        raise HTTPException(status_code=400, detail="Category is required")
+    cat = payload.category.strip().lower()
+    if collection2.find_one({"category": cat}) or collection2.find_one({"name": cat}):
+        raise HTTPException(status_code=400, detail="Category already exists")
+    collection2.insert_one({"category": cat})
+    return {"message": "Category added successfully"}
+
+# -------------------------
+# Admin: Update Category
+# -------------------------
+@app.put("/update-category")
+def update_category(email: str = Query(...), payload: UpdateCategoryModel = None):
+    ensure_admin(email)
+    if not payload:
+        raise HTTPException(status_code=400, detail="Payload required")
+    try:
+        oid = ObjectId(payload.category_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid category id")
+    new_name = (payload.category or "").strip().lower()
+    if not new_name:
+        raise HTTPException(status_code=400, detail="New category name required")
+    res = collection2.update_one({"_id": oid}, {"$set": {"category": new_name}})
+    if res.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Category not found")
+    return {"message": "Category updated successfully"}
+
+# -------------------------
+# Admin: Delete Category
+# -------------------------
+@app.delete("/delete-category/{category_id}")
+def delete_category(category_id: str = Path(...), email: str = Query(...)):
+    ensure_admin(email)
+    try:
+        oid = ObjectId(category_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid category id")
+    res = collection2.delete_one({"_id": oid})
+    if res.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Category not found")
+    return {"message": "Category deleted successfully"}
+
+# -------------------------
+# Admin: View All Expenses
+# -------------------------
+@app.get("/view-all-expenses")
+def view_all_expenses(email: str = Query(...)):
+    ensure_admin(email)
+    docs = list(collection1.find())
+    return {"expenses": list_objid_to_str(docs)}
+
+# -------------------------
+# Utility endpoints
+# -------------------------
+@app.get("/categories")
+def fetch_categories_only():
+    # Try to return distinct names in categories collection
+    cats = collection2.distinct("category")
+    if not cats:
+        # maybe categories stored with "name" field
+        cats = collection2.distinct("name")
+    return cats
+
+@app.get("/categories-full")
+def fetch_categories_full():
+    """Return full category documents (with _id) for admin management in frontend."""
+    docs = list(collection2.find())
+    return {"categories": list_objid_to_str(docs)}
