@@ -95,7 +95,7 @@ if st.session_state["email"]:
             del st.session_state[k]
 
 # ---- Main ----
-st.title("💸 Expense Tracker")
+st.title(" Expense Tracker")
 
 if not st.session_state.get("email"):
     st.info("Please register or login from the left sidebar to continue.")
